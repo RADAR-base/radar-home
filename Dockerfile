@@ -1,5 +1,12 @@
-FROM nginxinc/nginx-unprivileged:1.18.0-alpine
+FROM --platform=$BUILDPLATFORM node:18 as builder
 
-COPY dist /usr/share/nginx/html/
+WORKDIR /code
+COPY package*.json /code
+RUN npm install
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY src /code/src
+RUN npm run build
+
+FROM nginxinc/nginx-unprivileged:1.22-alpine
+
+COPY --from=builder /code/dist /usr/share/nginx/html/

@@ -1,0 +1,27 @@
+{
+  "name": "radar-home",
+  "version": "0.1.0",
+  "description": "Home page for RADAR-base",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "copy": "mkdir -p dist && cp -R src/* dist/",
+    "build": "npm run copy && NODE_ENV=production npx tailwindcss build --minify -i src/styles.css -o dist/styles.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RADAR-base/radar-home.git"
+  },
+  "keywords": [
+    "radar-base"
+  ],
+  "author": "Alexey Khleskov, Joris Borgdorff <joris@thehyve.nl>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/RADAR-base/radar-home/issues"
+  },
+  "homepage": "https://github.com/RADAR-base/radar-home#readme",
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "tailwindcss": "^3.2.4"
+  }
+}
