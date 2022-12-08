@@ -1,36 +1,42 @@
 #!/bin/sh
 
-set -e
-
 configure_block() {
   local file="$1" prefix="$2" subst="$3" tmpfile="$(mktemp)"
   local enable=$(printenv "${prefix}_ENABLED")
-  local subst_key="${prefix}_${subst}"
-  local subst_value=""
-  if [ -n "$enable" ] && [ -n "$subst" ]; then
-    subst_value=$(printenv "$subst_key")
-    if [ -z "$subst_value" ]; then
-      enable=""
-    fi
-  fi
+  local url=$(printenv "${prefix}_URL")
+  local result=1
 
   if [ -z "$enable" ]; then
     echo "Disabling $prefix"
     sed -r "/${prefix}_BEGIN/,/${prefix}_END/d" $file > $tmpfile
-  elif [ -n "$subst_value" ]; then
-    echo "Enabling $prefix (including $subst)"
-    sed -r "s|${subst_key}|${subst_value}|" $file | sed -r "/${prefix}_(BEGIN|END)/d" > $tmpfile
-  else
+  elif [ -z "$url" ]; then
     echo "Enabling $prefix"
-    sed -r "/${prefix}_(BEGIN|END)/d" $file > $tmpfile
+    sed -r -e "/${prefix}_(BEGIN|END)/d" $file > $tmpfile
+    result=0
+  else
+    echo "Enabling $prefix with URL"
+    sed -r -e "s|${prefix}_URL|${url}|" -e "/${prefix}_(BEGIN|END)/d" $file > $tmpfile
+    result=0
   fi
   cat "$tmpfile" > "$file"
   rm "$tmpfile"
+  return $result
 }
 
 cd /usr/share/nginx/html
 
-configure_block index.html "S3" "URL"
-configure_block index.html "DASHBOARD" "URL"
+configure_block index.html "S3"
+configure_block index.html "DASHBOARD"
 configure_block index.html "UPLOAD_PORTAL"
 configure_block index.html "REST_AUTHORIZER"
+
+configure_block index.html "MONITOR"
+has_monitor=$?
+configure_block index.html "GRAYLOG"
+has_graylog=$?
+
+if [ $has_monitor = 0 ] || [ $has_graylog = 0 ]; then
+  SYSTEM_ENABLED="1" configure_block index.html "SYSTEM"
+else
+  SYSTEM_ENABLED="" configure_block index.html "SYSTEM"
+fi

@@ -16,5 +16,7 @@ COPY --from=builder --chown=101 /code/dist/index.html /usr/share/nginx/html/
 
 ENV S3_ENABLED="" S3_URL="" \
   DASHBOARD_ENABLED="" DASHBOARD_URL="" \
-  UPLOAD_PORTAL_ENABLED="" \
-  REST_AUTHORIZER_ENABLED=""
+  UPLOAD_PORTAL_ENABLED="" UPLOAD_PORTAL_URL="/upload/" \
+  REST_AUTHORIZER_ENABLED="" REST_AUTHORIZER_URL="/rest-sources/authorizer/" \
+  MONITOR_ENABLED="" MONITOR_URL="" \
+  GRAYLOG_ENABLED="" GRAYLOG_URL=""

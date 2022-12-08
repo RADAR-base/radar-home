@@ -4,16 +4,16 @@ A page with RADAR links. It is released as docker image [radarbase/radar-home](h
 
 ## Configuration
 
-The Docker image has the following environment variables:
+This Docker image describes a number of components. The component name acts as a prefix for supported environment variables. A component has variables `<COMPONENT>_ENABLED` and `<COMPONENT>_URL`. The former describes whether to enable a given block, and the second what the URL to the component is. Both need to be set for the component to be rendered.
 
-| Environment variable | Description |
+| Components | Description |
 |---|---|
-| `S3_ENABLED` | Enable link to S3 download. Any non-empty value will enable the link to S3. |
-| `S3_URL` | URL to download data. A link to will only be created if this value is set. |
-| `DASHBOARD_ENABLED` | Enable link to the Grafana dashboard. Any non-empty value will enable the link to the dashboard. |
-| `DASHBOARD_URL` | URL to the Grafana dashboard. A link will only be created if this value is set. |
-| `UPLOAD_PORTAL_ENABLED` | Enable link to the data upload portal. Any non-empty value will enable the link to the upload portal. |
-| `REST_AUTHORIZER_ENABLED` | Enable link to the REST source authorizer, for Fitbit and Garmin data. Any non-empty value will enable the link to the REST authorizer. |
+| `S3` | Data download portal, usually Minio. |
+| `DASHBOARD` | Compliance dashboard, usually Grafana. |
+| `UPLOAD_PORTAL` | Upload portal used for the upload source connector. |
+| `REST_AUTHORIZER` | REST source authorizer, for Fitbit and Garmin authorization. |
+| `MONITORING` | The monitoring stack, usually Prometheus. |
+| `GRAYLOG` | System logs, usually from graylog. |
 
 Run
 
