@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DOCKER_IMAGE: radarbase/radar-app-config-frontend
+      DOCKER_IMAGE: radarbase/radar-home
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -72,8 +72,7 @@ jobs:
         with:
           context: .
           load: true
+          tags: ${{ env.DOCKER_IMAGE }}
 
       - name: Inspect docker image
-        run: |
-          docker pull ${{ env.DOCKER_IMAGE }}:${{ steps.docker_meta.outputs.version }}
-          docker image inspect ${{ env.DOCKER_IMAGE }}:${{ steps.docker_meta.outputs.version }}
+        run: docker image inspect ${{ env.DOCKER_IMAGE }}
