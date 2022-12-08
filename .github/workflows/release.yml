@@ -38,7 +38,7 @@ jobs:
       - name: Get tag message
         id: tag
         run: |
-          git fetch origin ${{ github.ref }}
+          git fetch -f origin ${{ github.ref }}:${{ github.ref }}
           echo "tag-body=$(git tag -l --format='%(contents:subject)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
 
       - name: Release
