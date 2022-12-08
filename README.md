@@ -12,7 +12,7 @@ This Docker image describes a number of components. The component name acts as a
 | `DASHBOARD` | Compliance dashboard, usually Grafana. |
 | `UPLOAD_PORTAL` | Upload portal used for the upload source connector. |
 | `REST_AUTHORIZER` | REST source authorizer, for Fitbit and Garmin authorization. |
-| `MONITORING` | The monitoring stack, usually Prometheus. |
+| `MONITOR` | The monitoring stack, usually Prometheus. |
 | `GRAYLOG` | System logs, usually from graylog. |
 
 Run
