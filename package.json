@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "copy": "mkdir -p dist && cp -R src/* dist/",
-    "build": "npm run copy && npx tailwindcss build -i src/styles.css -o dist/styles.css"
+    "build": "npm run copy && npx tailwindcss build --minify -i src/styles.css -o dist/styles.css"
   },
   "repository": {
     "type": "git",
