@@ -37,9 +37,9 @@ jobs:
       
       - name: Get tag message
         id: tag
-        run:
+        run: |
           git fetch origin ${{ github.ref }}
-          echo "tag_body=$(git tag -l --format='%(contents:subject)' ${{ github.ref }})" >> $GITHUB_OUTPUT
+          echo "tag-body=$(git tag -l --format='%(contents:subject)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -47,7 +47,7 @@ jobs:
           files: dist.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
-          body: ${{ steps.tag.outputs.tag_body }}
+          body: ${{ steps.tag.outputs.tag-body }}
 
   docker:
     # The type of runner that the job will run on
