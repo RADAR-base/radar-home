@@ -4,7 +4,7 @@ set -e
 
 configure_block() {
   local file="$1" prefix="$2" subst="$3" tmpfile="$(mktemp)"
-  local enable=$(printenv "${prefix}_ENABLE")
+  local enable=$(printenv "${prefix}_ENABLED")
   local subst_key="${prefix}_${subst}"
   local subst_value=""
   if [ -n "$enable" ] && [ -n "$subst" ]; then
@@ -15,10 +15,13 @@ configure_block() {
   fi
 
   if [ -z "$enable" ]; then
+    echo "Disabling $prefix"
     sed -r "/${prefix}_BEGIN/,/${prefix}_END/d" $file > $tmpfile
   elif [ -n "$subst_value" ]; then
+    echo "Enabling $prefix (including $subst)"
     sed -r "s|${subst_key}|${subst_value}|" $file | sed -r "/${prefix}_(BEGIN|END)/d" > $tmpfile
   else
+    echo "Enabling $prefix"
     sed -r "/${prefix}_(BEGIN|END)/d" $file > $tmpfile
   fi
   cat "$tmpfile" > "$file"
