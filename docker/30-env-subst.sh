@@ -29,6 +29,7 @@ configure_block index.html "S3"
 configure_block index.html "DASHBOARD"
 configure_block index.html "UPLOAD_PORTAL"
 configure_block index.html "REST_AUTHORIZER"
+configure_block index.html "APP_CONFIG"
 
 configure_block index.html "MONITOR"
 has_monitor=$?
