@@ -8,7 +8,7 @@ COPY src /code/src
 COPY tailwind.config.js /code/
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.22-alpine
+FROM nginxinc/nginx-unprivileged:1.27-alpine3.20-perl
 
 COPY docker/30-env-subst.sh /docker-entrypoint.d/
 COPY --from=builder /code/dist /usr/share/nginx/html/
