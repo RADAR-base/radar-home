@@ -1,4 +1,3 @@
-# Continuous integration, including test and integration test
 name: Main test
 
 # Run in master and dev branches and in all pull requests to those branches
@@ -8,29 +7,29 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
-  # Build and test the code
-  node:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository }}
+  IMAGE_NAME: radar-home
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Use Node.js 18
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: 18
           cache: npm
           cache-dependency-path: 'package-lock.json'
 
-      # Compile the code
       - name: Install dependencies
         run: npm install
 
-      # Compile the code
       - name: Build code
         run: npm run build
 
@@ -42,37 +41,60 @@ jobs:
             dist
           retention-days: 5
 
-  dockerFrontend:
-    # The type of runner that the job will run on
+  # Check that the docker image builds correctly
+  docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
-    env:
-      DOCKER_IMAGE: radarbase/radar-home
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase image name
+        run: |
+          echo "DOCKER_IMAGE=${REGISTRY}/${REPOSITORY,,}/${IMAGE_NAME}" >>${GITHUB_ENV}
+
+      # Add Docker labels and tags
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
 
       # Setup docker build environment
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Build docker
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
-          context: .
           load: true
-          tags: ${{ env.DOCKER_IMAGE }}
+          context: .
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          # Use runtime labels from docker_meta as well as fixed labels
+          labels: |
+            ${{ steps.docker_meta.outputs.labels }}
+            maintainer=Peyman Mohtashami <peyman@thehyve.nl>
+            org.opencontainers.image.authors=Peyman Mohtashami <peyman@thehyve.nl>
+            org.opencontainers.image.description=RADAR-base home page
+            org.opencontainers.image.vendor=RADAR-base
+            org.opencontainers.image.licenses=Apache-2.0
 
       - name: Inspect docker image
-        run: docker image inspect ${{ env.DOCKER_IMAGE }}
+        run: docker image inspect ${{ env.DOCKER_IMAGE }}:${{ steps.docker_meta.outputs.version }}
+
+      # Push the image on the dev and master branches
+      - name: Push image
+        if: ${{ github.event_name != 'pull_request' }}
+        run: docker push ${{ env.DOCKER_IMAGE }}:${{ steps.docker_meta.outputs.version }}

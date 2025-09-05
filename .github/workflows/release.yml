@@ -1,34 +1,32 @@
-# Create release files
 name: Release
 
 on:
   push:
     tags:
       - "v*.*.*"
+      -
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository }}
+  IMAGE_NAME: radar-home
 
 jobs:
-  # Build and test the code
   release:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Use Node.js 18
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: 18
           cache: npm
           cache-dependency-path: 'package-lock.json'
 
-      # Compile the code
       - name: Install dependencies
         run: npm install
 
-      # Compile the code
       - name: Build code
         run: npm run build
 
@@ -50,22 +48,28 @@ jobs:
           body: ${{ steps.tag.outputs.tag-body }}
 
   docker:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    env:
-      DOCKER_IMAGE: radarbase/radar-home
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      # Setup docker build environment
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase image name
+        run: |
+          echo "DOCKER_IMAGE=${REGISTRY}/${REPOSITORY,,}/${IMAGE_NAME}" >>${GITHUB_ENV}
 
       # Add Docker labels and tags
       - name: Docker meta
@@ -77,15 +81,8 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      # Setup docker build environment
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build frontend docker
-        uses: docker/build-push-action@v3
+      - name: Build docker
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -94,9 +91,9 @@ jobs:
           # Use runtime labels from docker_meta_backend as well as fixed labels
           labels: |
             ${{ steps.docker_meta.outputs.labels }}
-            maintainer=Joris Borgdorff <joris@thehyve.nl>
+            maintainer=Peyman Mohtashami <peyman@thehyve.nl>
+            org.opencontainers.image.authors=Peyman Mohtashami <peyman@thehyve.nl>
             org.opencontainers.image.description=RADAR-base home page
-            org.opencontainers.image.authors=Joris Borgdorff <joris@thehyve.nl>
             org.opencontainers.image.vendor=RADAR-base
             org.opencontainers.image.licenses=Apache-2.0
 
