@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
-      -
+
 env:
   REGISTRY: ghcr.io
   REPOSITORY: ${{ github.repository }}
@@ -13,6 +13,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions: write-all
 
     steps:
       - uses: actions/checkout@v5
@@ -40,7 +41,7 @@ jobs:
           echo "tag-body=$(git tag -l --format='%(contents:subject)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist.zip
           generate_release_notes: true
@@ -49,6 +50,9 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v5
@@ -74,7 +78,7 @@ jobs:
       # Add Docker labels and tags
       - name: Docker meta
         id: docker_meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.DOCKER_IMAGE }}
           tags: |
