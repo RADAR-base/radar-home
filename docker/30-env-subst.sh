@@ -23,7 +23,6 @@ configure_block() {
   return $result
 }
 
-cd /usr/share/nginx/html
 
 configure_block index.html "S3"
 configure_block index.html "DASHBOARD"
@@ -41,3 +40,5 @@ if [ $has_monitor = 0 ] || [ $has_graylog = 0 ]; then
 else
   SYSTEM_ENABLED="" configure_block index.html "SYSTEM"
 fi
+echo
+echo index.html update complete.
