@@ -23,6 +23,7 @@ configure_block() {
   return $result
 }
 
+cd /usr/share/nginx/html
 
 configure_block index.html "S3"
 configure_block index.html "DASHBOARD"
