@@ -1,0 +1,44 @@
+name: Trivy dependency scan
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - release-*
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 16
+          cache: npm
+
+      - uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.74.0
+          cache: true
+
+      # Every severity, also unfixed, so MEDIUM findings on shipped packages stay visible.
+      - name: List all findings
+        run: |
+          {
+            echo '### Trivy: all findings'
+            echo '```'
+            trivy fs --quiet --scanners vuln --ignorefile .trivyignore.yaml --format table .
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on fixable HIGH/CRITICAL findings
+        run: >-
+          trivy fs
+          --scanners vuln
+          --severity HIGH,CRITICAL
+          --ignore-unfixed
+          --ignorefile .trivyignore.yaml
+          --exit-code 1
+          .
